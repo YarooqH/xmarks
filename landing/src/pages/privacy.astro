@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { issuesUrl, repoUrl } from '../site';
+import { base, issuesUrl, repoUrl } from '../site';
 
 const title = 'Privacy policy · XMarks';
 const description = 'What the XMarks extension stores, where it keeps it, and the few times it touches the network.';
@@ -108,7 +108,8 @@ const updated = '20 October 2026';
       <p>
         If this policy changes, the new version will be posted here with a new date. The extension is open source, so you can
         check all of this in <a href={repoUrl} target="_blank" rel="noopener noreferrer">the code on GitHub</a>. Questions?
-        <a href={issuesUrl} target="_blank" rel="noopener noreferrer">Open an issue</a>.
+        <a href={issuesUrl} target="_blank" rel="noopener noreferrer">Open an issue</a>. The rules for using XMarks are in the
+        <a href={`${base}terms/`}>terms of use</a>.
       </p>
     </section>
   </article>

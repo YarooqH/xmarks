@@ -16,3 +16,4 @@
 - **License**: MIT
 - **Repository**: https://github.com/YarooqH/xmarks
 - **Privacy policy**: https://yarooqh.github.io/xmarks/privacy/
+- **Terms of use**: https://yarooqh.github.io/xmarks/terms/

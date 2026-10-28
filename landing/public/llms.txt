@@ -14,6 +14,7 @@
 - **Platform**: Chrome and other Chromium browsers (Manifest V3)
 - **Storage**: IndexedDB in the browser; settings in Chrome extension storage
 - **License**: MIT
+- **Chrome Web Store**: https://chromewebstore.google.com/detail/xmarks-bookmark-manager-f/hhdfgcjebkpakbcjaiikoceimfeogpih
 - **Repository**: https://github.com/YarooqH/xmarks
 - **Privacy policy**: https://yarooqh.github.io/xmarks/privacy/
 - **Terms of use**: https://yarooqh.github.io/xmarks/terms/

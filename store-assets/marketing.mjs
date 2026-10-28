@@ -26,9 +26,15 @@ const PUBLIC = path.join(LANDING, 'public');
 const SCREENS = path.join(PUBLIC, 'screens');
 const BROWSER = process.env.XMARKS_BROWSER ?? 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 
+// The frames of the landing page's guided tour (components/Screens.astro).
 const shots = [
-  { from: '02-dashboard-search', to: 'library' },
+  { from: '04-timeline-button', to: 'timeline-button' },
   { from: '05-timeline-popover', to: 'timeline-popover' },
+  { from: '06-timeline-saved', to: 'timeline-saved' },
+  { from: '01-dashboard', to: 'dashboard' },
+  { from: '02-dashboard-search', to: 'dashboard-search' },
+  { from: '03-dashboard-category', to: 'dashboard-category' },
+  { from: '08-sync-entry', to: 'sync-entry' },
   { from: '09-sync-panel', to: 'sync-panel' },
 ];
 

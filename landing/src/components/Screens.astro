@@ -1,157 +1,360 @@
 ---
-import { base } from '../site';
+import { base, storeUrl } from '../site';
 
-// Real screenshots of the extension, captured by store-assets/capture.mjs with
-// its fictional demo library. Regenerate with store-assets/marketing.mjs.
-// Marker positions are percentages of the 1280x800 screenshot.
-const views = [
+// A click-through tour on real screenshots of the extension, captured by
+// store-assets/capture.mjs with its fictional demo library. Regenerate the
+// frames with store-assets/marketing.mjs. `at` is the spot to click, in pixels
+// of the 1280x800 screenshot; a step without `at` ends its chapter.
+const W = 1280;
+const H = 800;
+
+const chapters = [
   {
-    id: 'library',
-    tab: 'Your library',
-    url: 'XMarks dashboard',
-    src: 'screens/library',
-    alt: 'The XMarks dashboard searching for “bread”: categories on the left, matching posts with notes and tags in the middle, settings on the right.',
-    points: [
-      { x: 41.2, y: 10.4, title: 'Search everything', body: 'Post text, authors, tags and your notes.' },
-      { x: 17, y: 52.1, title: 'Categories', body: 'Color-coded, with a count on each.' },
-      { x: 50, y: 66.5, title: 'Notes and tags', body: 'Remember why you saved it.' },
-      { x: 88, y: 53.4, title: 'Make it yours', body: 'Accent color, theme and card density.' },
+    tab: 'Save from X',
+    steps: [
+      {
+        frame: 'timeline-button',
+        url: 'x.com/home',
+        title: 'Spot the book',
+        body: 'XMarks adds a book button to every post, next to X’s own bookmark. Click it on the top post.',
+        at: [733, 134],
+        tip: 'Click the book',
+      },
+      {
+        frame: 'timeline-popover',
+        url: 'x.com/home',
+        title: 'Pick a category',
+        body: 'Your categories open right under the button, with room for a note. This one is clearly a meme. Click Memes.',
+        at: [516, 410],
+        tip: 'Click Memes',
+      },
+      {
+        frame: 'timeline-saved',
+        url: 'x.com/home',
+        title: 'Saved',
+        body: 'The post, your note and its category are in your library now. Click View to go there.',
+        at: [709, 754],
+        tip: 'Click View',
+      },
     ],
   },
   {
-    id: 'save',
-    tab: 'Saving on X',
-    url: 'x.com/home',
-    src: 'screens/timeline-popover',
-    alt: 'A post on the X timeline with the XMarks book button in its action bar and the category menu open below it.',
-    points: [
-      { x: 57.2, y: 57.3, title: 'The book button', body: 'It sits in every post’s action bar.' },
-      { x: 50, y: 80.8, title: 'Pick a category', body: 'Or create a new one on the spot.' },
-      { x: 50.8, y: 96.5, title: 'Add a note', body: 'Saved with the post, searchable later.' },
+    tab: 'Find it later',
+    steps: [
+      {
+        frame: 'dashboard',
+        url: 'XMarks dashboard',
+        title: 'Your library',
+        body: 'Everything you’ve saved, on one page. Click the search box and look for something.',
+        at: [527, 83],
+        tip: 'Click to search',
+      },
+      {
+        frame: 'dashboard-search',
+        url: 'XMarks dashboard',
+        title: 'Found the focaccia',
+        body: 'Search reads post text, authors, tags and your notes. Now click Memes in the sidebar.',
+        at: [74, 482],
+        tip: 'Click Memes',
+      },
+      {
+        frame: 'dashboard-category',
+        url: 'XMarks dashboard',
+        title: 'Sorted',
+        body: 'Each category keeps its own color and count. On the right: save mode, accent color, card density and how much space it all takes.',
+        next: 'Next: sync your old bookmarks',
+      },
     ],
   },
   {
-    id: 'sync',
-    tab: 'Syncing',
-    url: 'x.com/i/bookmarks',
-    src: 'screens/sync-panel',
-    alt: 'The Sync Bookmarks button under X’s Post button, with the sync panel open and a Start Sync button.',
-    points: [
-      { x: 21, y: 57.1, title: 'One click', body: 'Sync Bookmarks sits under X’s Post button.' },
-      { x: 25, y: 69, title: 'Skips duplicates', body: 'Only posts you don’t have yet are added.' },
-      { x: 25, y: 83.1, title: 'Pause any time', body: 'Pick up where you left off later.' },
+    tab: 'Sync old ones',
+    steps: [
+      {
+        frame: 'sync-entry',
+        url: 'x.com/i/bookmarks',
+        title: 'Open your Bookmarks on X',
+        body: 'XMarks adds Sync Bookmarks under the Post button. It shows up on the Bookmarks tab in History too. Click it.',
+        at: [147, 456],
+        tip: 'Click Sync Bookmarks',
+      },
+      {
+        frame: 'sync-panel',
+        url: 'x.com/i/bookmarks',
+        title: 'Start the sync',
+        body: 'It scrolls through your bookmarks for you and skips the ones you already have. Click Start Sync.',
+        at: [180, 665],
+        tip: 'Click Start Sync',
+      },
+      {
+        frame: 'sync-panel',
+        url: 'x.com/i/bookmarks',
+        sync: true,
+        busyTitle: 'Syncing…',
+        busyBody: 'You can pause any time and pick up where you left off.',
+        title: 'That’s the tour',
+        body: 'Every post you’ve bookmarked, searchable and sorted, and none of it leaves your browser.',
+      },
     ],
   },
 ];
+
+const steps = chapters.flatMap((c, ci) =>
+  c.steps.map((s, si) => ({
+    ...s,
+    chapter: ci,
+    n: si + 1,
+    of: c.steps.length,
+    at: s.at && [(s.at[0] / W) * 100, (s.at[1] / H) * 100],
+  })),
+);
+
+const alts: Record<string, string> = {
+  'timeline-button': 'A post on the X timeline with the XMarks book button in its action bar.',
+  'timeline-popover': 'The XMarks category menu open under a post on X, with a note field.',
+  'timeline-saved': 'The X timeline with a “Saved to XMarks!” message and a View link.',
+  dashboard: 'The XMarks dashboard: categories on the left, saved posts with notes and tags in the middle, settings on the right.',
+  'dashboard-search': 'The XMarks dashboard searching for “bread”, showing a focaccia video post and a post about medieval bread.',
+  'dashboard-category': 'The XMarks dashboard filtered to the Memes category.',
+  'sync-entry': 'X’s Bookmarks page with a Sync Bookmarks button under the Post button.',
+  'sync-panel': 'The XMarks sync panel open under the Sync Bookmarks button, with a Start Sync button.',
+};
+const frames = [...new Set(steps.map((s) => s.frame))];
+const first = steps[0];
 ---
 
 <section class="screens container" id="screens" aria-labelledby="screens-title">
   <div class="head">
     <div class="intro">
       <h2 class="section-title" id="screens-title">See it in action</h2>
-      <p>Real screens from the extension, not mockups.</p>
+      <p>A one-minute tour on real screens. Click where it glows.</p>
     </div>
-    <div class="seg" role="tablist" aria-label="Screens" data-screen-tabs>
+    <div class="seg" role="tablist" aria-label="Tour chapters" data-tour-tabs>
       {
-        views.map((v, i) => (
+        chapters.map((c, i) => (
           <button
             type="button"
             role="tab"
-            id={`tab-${v.id}`}
-            aria-controls={`panel-${v.id}`}
+            id={`tour-tab-${i}`}
+            aria-controls="tour-panel"
             aria-selected={i === 0 ? 'true' : 'false'}
             tabindex={i === 0 ? 0 : -1}
           >
-            {v.tab}
+            <span class="tab-n" aria-hidden="true">{i + 1}</span>
+            {c.tab}
           </button>
         ))
       }
     </div>
   </div>
 
-  {
-    views.map((v, i) => (
-      <div class="panel" role="tabpanel" id={`panel-${v.id}`} aria-labelledby={`tab-${v.id}`} hidden={i !== 0} data-panel>
-        <div class="window">
-          <div class="bar" aria-hidden="true">
-            <span class="dots"><i /><i /><i /></span>
-            <span class="url">{v.url}</span>
-          </div>
-          <div class="shot">
+  <div class="tour" id="tour-panel" role="tabpanel" aria-labelledby="tour-tab-0" data-tour data-steps={JSON.stringify(steps)}>
+    <div class="window">
+      <div class="bar" aria-hidden="true">
+        <span class="dots"><i /><i /><i /></span>
+        <span class="url" data-url>{first.url}</span>
+      </div>
+      <div class="shot has-spot" data-shot style={`--sx:${first.at![0]}%;--sy:${first.at![1]}%`}>
+        {
+          frames.map((f, i) => (
             <img
-              src={`${base}${v.src}.jpg`}
-              srcset={`${base}${v.src}.jpg 1280w, ${base}${v.src}@2x.webp 2560w`}
+              class:list={['frame', { 'is-on': i === 0 }]}
+              data-frame={f}
+              src={`${base}screens/${f}.jpg`}
+              srcset={`${base}screens/${f}.jpg 1280w, ${base}screens/${f}@2x.webp 2560w`}
               sizes="(max-width: 1200px) 100vw, 1136px"
               width="1280"
               height="800"
-              alt={v.alt}
+              alt={alts[f]}
+              aria-hidden={i === 0 ? undefined : 'true'}
               loading="lazy"
               decoding="async"
             />
-            {v.points.map((p, n) => (
-              <span class="pin" style={`left:${p.x}%;top:${p.y}%`} data-pin={n} aria-hidden="true">
-                {n + 1}
-              </span>
-            ))}
-          </div>
-        </div>
-        <ol class="points">
-          {v.points.map((p, n) => (
-            <li data-point={n}>
-              <span class="num" aria-hidden="true">{n + 1}</span>
-              <span class="text">
-                <b>{p.title}</b>
-                <span>{p.body}</span>
-              </span>
-            </li>
-          ))}
-        </ol>
+          ))
+        }
+        <div class="dim" aria-hidden="true"></div>
+        <!-- Drawn over the sync panel's empty progress bar and its "Ready to start" label. -->
+        <div class="sync-label" aria-hidden="true">Done · 19 posts added</div>
+        <div class="sync-bar" aria-hidden="true"><i></i></div>
+        <button type="button" class="spot" data-spot aria-label={first.tip}>
+          <span class="tip" data-tip aria-hidden="true">{first.tip}</span>
+        </button>
       </div>
-    ))
-  }
+    </div>
+
+    <div class="coach">
+      <div class="coach-text" aria-live="polite">
+        <span class="count" data-count>Step 1 of {first.of}</span>
+        <b data-title>{first.title}</b>
+        <span data-body>{first.body}</span>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" data-back hidden>Back</button>
+        <button type="button" class="btn btn-accent" data-next hidden></button>
+        <a class="btn btn-accent" href={storeUrl} target="_blank" rel="noopener noreferrer" data-cta hidden>Add to Chrome</a>
+        <button type="button" class="btn btn-ghost" data-restart hidden>Start over</button>
+      </div>
+    </div>
+  </div>
 </section>
 
 <script>
-  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-screen-tabs] [role="tab"]'));
-
-  const select = (tab: HTMLButtonElement) => {
-    for (const t of tabs) {
-      const on = t === tab;
-      t.setAttribute('aria-selected', String(on));
-      t.tabIndex = on ? 0 : -1;
-      const panel = document.getElementById(t.getAttribute('aria-controls')!);
-      if (panel) panel.hidden = !on;
-    }
+  type Step = {
+    frame: string;
+    url: string;
+    title: string;
+    body: string;
+    chapter: number;
+    n: number;
+    of: number;
+    at?: [number, number];
+    tip?: string;
+    next?: string;
+    sync?: boolean;
+    busyTitle?: string;
+    busyBody?: string;
   };
 
-  tabs.forEach((tab, i) => {
-    tab.addEventListener('click', () => select(tab));
-    tab.addEventListener('keydown', (e) => {
-      const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-      if (!step) return;
-      e.preventDefault();
-      const next = tabs[(i + step + tabs.length) % tabs.length];
-      select(next);
-      next.focus();
-    });
-  });
+  const root = document.querySelector<HTMLElement>('[data-tour]');
+  if (root) {
+    const steps: Step[] = JSON.parse(root.dataset.steps!);
+    const $ = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    const shot = $('[data-shot]');
+    const spot = $<HTMLButtonElement>('[data-spot]');
+    const tip = $('[data-tip]');
+    const back = $<HTMLButtonElement>('[data-back]');
+    const next = $<HTMLButtonElement>('[data-next]');
+    const cta = $<HTMLAnchorElement>('[data-cta]');
+    const restart = $<HTMLButtonElement>('[data-restart]');
+    const frames = Array.from(root.querySelectorAll<HTMLImageElement>('[data-frame]'));
+    const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-tour-tabs] [role="tab"]'));
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  // Hovering a point lights its marker on the screenshot, and the other way round.
-  document.querySelectorAll<HTMLElement>('[data-panel]').forEach((panel) => {
-    const light = (n: string | undefined, on: boolean) => {
-      if (n === undefined) return;
-      panel.querySelector(`[data-pin="${n}"]`)?.classList.toggle('is-on', on);
-      panel.querySelector(`[data-point="${n}"]`)?.classList.toggle('is-on', on);
+    let current = 0;
+    let syncTimer = 0;
+
+    const say = (title: string, body: string) => {
+      $('[data-title]').textContent = title;
+      $('[data-body]').textContent = body;
     };
-    panel.querySelectorAll<HTMLElement>('[data-pin], [data-point]').forEach((el) => {
-      const n = el.dataset.pin ?? el.dataset.point;
-      el.addEventListener('mouseenter', () => light(n, true));
-      el.addEventListener('mouseleave', () => light(n, false));
+
+    const show = (i: number, moveFocus = false) => {
+      const s = steps[i];
+      current = i;
+      window.clearTimeout(syncTimer);
+
+      for (const f of frames) {
+        const on = f.dataset.frame === s.frame;
+        f.classList.toggle('is-on', on);
+        if (on) f.removeAttribute('aria-hidden');
+        else f.setAttribute('aria-hidden', 'true');
+      }
+      $('[data-url]').textContent = s.url;
+
+      tabs.forEach((t, ti) => {
+        const on = ti === s.chapter;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        if (on) root.setAttribute('aria-labelledby', t.id);
+      });
+
+      shot.classList.toggle('has-spot', !!s.at);
+      shot.classList.remove('syncing', 'synced');
+      spot.hidden = !s.at;
+      if (s.at) {
+        const [x, y] = s.at;
+        shot.style.setProperty('--sx', `${x}%`);
+        shot.style.setProperty('--sy', `${y}%`);
+        // Keep the tip on screen: under the spot near the top, hugging an edge near the sides.
+        tip.classList.toggle('below', y < 22);
+        tip.classList.toggle('start', x < 16);
+        tip.classList.toggle('end', x > 84);
+        tip.textContent = s.tip!;
+        spot.setAttribute('aria-label', s.tip!);
+      }
+
+      $('[data-count]').textContent = `Step ${s.n} of ${s.of}`;
+      const last = i === steps.length - 1;
+      back.hidden = i === 0;
+      next.hidden = !s.next;
+      next.textContent = s.next ?? '';
+      cta.hidden = restart.hidden = true;
+
+      const finish = () => {
+        shot.classList.add('synced');
+        say(s.title, s.body);
+        cta.hidden = restart.hidden = false;
+        if (moveFocus) cta.focus();
+      };
+
+      if (s.sync) {
+        say(s.busyTitle!, s.busyBody!);
+        shot.classList.add('syncing');
+        syncTimer = window.setTimeout(finish, reduced.matches ? 0 : 2200);
+      } else {
+        say(s.title, s.body);
+        if (last) finish();
+      }
+
+      if (moveFocus) {
+        if (s.at) spot.focus();
+        else if (s.next) next.focus();
+      }
+    };
+
+    spot.addEventListener('click', () => {
+      // Focus follows the spot only for keyboard users, so a mouse click doesn't leave a focus ring.
+      const keyboard = spot.matches(':focus-visible');
+      show(Math.min(current + 1, steps.length - 1), keyboard);
     });
-  });
+
+    // Clicked somewhere else on the screenshot: point at the right spot.
+    shot.addEventListener('click', (e) => {
+      if (!shot.classList.contains('has-spot') || spot.contains(e.target as Node)) return;
+      tip.textContent = 'Over here';
+      spot.classList.remove('nudge');
+      void spot.offsetWidth;
+      spot.classList.add('nudge');
+    });
+    spot.addEventListener('animationend', (e) => {
+      if (e.animationName.includes('nudge')) {
+        spot.classList.remove('nudge');
+        tip.textContent = steps[current].tip ?? '';
+      }
+    });
+
+    back.addEventListener('click', () => show(Math.max(current - 1, 0), true));
+    next.addEventListener('click', () => show(current + 1, true));
+    restart.addEventListener('click', () => show(0, true));
+
+    const startOf = (chapter: number) => steps.findIndex((s) => s.chapter === chapter);
+    tabs.forEach((tab, ti) => {
+      tab.addEventListener('click', () => show(startOf(ti)));
+      tab.addEventListener('keydown', (e) => {
+        const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!step) return;
+        e.preventDefault();
+        const to = (ti + step + tabs.length) % tabs.length;
+        show(startOf(to));
+        tabs[to].focus();
+      });
+    });
+  }
 </script>
 
 <style>
+  /* Registered so the spotlight and the spot glide from one target to the next. */
+  @property --sx {
+    syntax: '<percentage>';
+    inherits: true;
+    initial-value: 50%;
+  }
+
+  @property --sy {
+    syntax: '<percentage>';
+    inherits: true;
+    initial-value: 50%;
+  }
+
   .screens {
     padding-top: 24px;
     padding-bottom: 112px;
@@ -190,7 +393,10 @@ const views = [
 
   .seg button {
     height: 40px;
-    padding: 0 18px;
+    padding: 0 18px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     border: none;
     border-radius: 9999px;
     background: transparent;
@@ -211,22 +417,21 @@ const views = [
     color: var(--accent-contrast);
   }
 
-  .panel {
+  .tab-n {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+
+  .tour {
     display: flex;
     flex-direction: column;
-    gap: 28px;
-    animation: panel-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  .panel[hidden] {
-    display: none;
-  }
-
-  @keyframes panel-in {
-    from {
-      opacity: 0;
-      transform: translateY(8px) scale(0.99);
-    }
+    gap: 20px;
   }
 
   .window {
@@ -278,106 +483,271 @@ const views = [
 
   .shot {
     position: relative;
+    aspect-ratio: 1280 / 800;
     overflow: hidden;
     border-radius: 0 0 17px 17px;
+    background: #000;
+    container-type: inline-size;
+    transition:
+      --sx 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+      --sy 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  img {
+  .frame {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.35s ease;
   }
 
-  .pin {
+  .frame.is-on {
+    opacity: 1;
+  }
+
+  /* The spotlight: everything but the target dims a little. */
+  .dim {
     position: absolute;
-    width: 30px;
-    height: 30px;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--accent-contrast);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 800;
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.55), 0 4px 14px rgba(0, 0, 0, 0.5);
-    transition: transform 0.2s var(--spring);
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at var(--sx) var(--sy), transparent 0 5cqw, rgba(0, 0, 0, 0.55) 11cqw);
+    opacity: 0;
+    transition: opacity 0.35s ease;
   }
 
-  /* A soft ring that breathes, so the markers read as live, not printed. */
-  .pin::after {
+  .has-spot .dim {
+    opacity: 1;
+  }
+
+  .spot {
+    position: absolute;
+    left: var(--sx);
+    top: var(--sy);
+    width: max(28px, 3.6cqw);
+    height: max(28px, 3.6cqw);
+    padding: 0;
+    transform: translate(-50%, -50%);
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 24px var(--accent);
+    cursor: pointer;
+  }
+
+  /* A bigger invisible hit area than the ring. */
+  .spot::before {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+  }
+
+  .spot::after {
     content: '';
     position: absolute;
     inset: -6px;
     border-radius: 50%;
     border: 2px solid var(--accent);
     opacity: 0;
-    animation: ring 2.4s ease-out infinite;
+    animation: ring 1.8s ease-out infinite;
+    pointer-events: none;
   }
 
-  .pin.is-on {
-    transform: translate(-50%, -50%) scale(1.2);
+  .spot[hidden] {
+    display: none;
+  }
+
+  .spot:hover {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  .spot:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 6px;
+  }
+
+  .spot.nudge {
+    animation: nudge 0.5s ease;
   }
 
   @keyframes ring {
     0% {
-      opacity: 0.7;
+      opacity: 0.8;
       transform: scale(0.8);
     }
     70%,
     100% {
       opacity: 0;
-      transform: scale(1.5);
+      transform: scale(1.7);
     }
   }
 
-  .points {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
+  @keyframes nudge {
+    0%,
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    30% {
+      transform: translate(-50%, -50%) scale(1.35);
+    }
+    60% {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
   }
 
-  .points li {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    padding: 16px 18px;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    transition: border-color 0.15s, background 0.15s;
+  .tip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 12px);
+    transform: translateX(-50%);
+    padding: 6px 12px;
+    border-radius: 9999px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
   }
 
-  .points li.is-on {
-    border-color: var(--accent);
-    background: var(--accent-soft);
+  .tip.below {
+    bottom: auto;
+    top: calc(100% + 12px);
   }
 
-  .num {
-    flex: 0 0 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 1px solid var(--accent);
-    color: var(--accent);
+  .tip.start {
+    left: -6px;
+    transform: none;
+  }
+
+  .tip.end {
+    left: auto;
+    right: -6px;
+    transform: none;
+  }
+
+  /* Overlays lined up with the sync panel in sync-panel.jpg (pixels / 1280 or / 800). */
+  .sync-bar,
+  .sync-label {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sync-bar {
+    left: 4.53%;
+    top: 78.5%;
+    width: 19.22%;
+    height: 0.75%;
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+
+  .sync-bar i {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: #1d9bf0;
+  }
+
+  .syncing .sync-bar {
+    opacity: 1;
+  }
+
+  .syncing .sync-bar i {
+    width: 100%;
+    transition: width 2.2s cubic-bezier(0.4, 0, 0.3, 1);
+  }
+
+  .sync-label {
+    left: 4.4%;
+    top: 75.8%;
+    width: 13%;
+    height: 2.2%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 800;
+    padding-left: 0.1cqw;
+    background: #000;
+    color: #00ba7c;
+    font-size: 0.9cqw;
+    font-weight: 600;
+    white-space: nowrap;
   }
 
-  .text {
+  .synced .sync-label {
+    opacity: 1;
+    transition: opacity 0.25s ease;
+  }
+
+  .coach {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 24px;
+    flex-wrap: wrap;
+    min-height: 92px;
+    padding: 18px 22px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+  }
+
+  .coach-text {
+    flex: 1 1 360px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     font-size: 15px;
   }
 
-  .text span {
+  .count {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .coach-text b {
+    font-size: 19px;
+    letter-spacing: var(--track-m);
+  }
+
+  .coach-text span:last-child {
     color: var(--muted);
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .actions [hidden] {
+    display: none;
+  }
+
+  .btn-ghost {
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--text);
+  }
+
+  .btn-ghost:hover {
+    background: var(--bg-2);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shot,
+    .frame,
+    .dim,
+    .syncing .sync-bar i {
+      transition: none;
+    }
+
+    .spot::after {
+      animation: none;
+    }
   }
 
   @media (max-width: 720px) {
@@ -387,8 +757,13 @@ const views = [
 
     .seg button {
       flex: 1;
-      padding: 0 8px;
+      justify-content: center;
+      padding: 0 6px;
       font-size: 13px;
+    }
+
+    .tab-n {
+      display: none;
     }
 
     .bar {
@@ -405,15 +780,13 @@ const views = [
       padding: 2px 12px;
     }
 
-    .pin {
-      width: 20px;
-      height: 20px;
+    .tip {
+      padding: 4px 9px;
       font-size: 11px;
-      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.55);
     }
 
-    .pin::after {
-      inset: -4px;
+    .coach {
+      padding: 16px;
     }
   }
 </style>

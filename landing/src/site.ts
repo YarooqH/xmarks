@@ -1,8 +1,8 @@
 // Links and addresses used across pages.
 
 export const repoUrl = 'https://github.com/YarooqH/xmarks';
-// TODO: replace with the real listing URL once the extension is published
-export const storeUrl = 'https://chromewebstore.google.com';
+// No ?hl= so the store opens in the visitor's own language.
+export const storeUrl = 'https://chromewebstore.google.com/detail/xmarks-bookmark-manager-f/hhdfgcjebkpakbcjaiikoceimfeogpih';
 export const siteUrl = 'https://yarooqh.github.io/xmarks/';
 export const issuesUrl = `${repoUrl}/issues`;
 

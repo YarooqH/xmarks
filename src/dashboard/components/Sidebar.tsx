@@ -156,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <ProfileSwitcher />
 
       <div className="sidebar-section-label" style={{ display: 'flex', alignItems: 'center' }}>
-        Library
+        Bookmarks
         <InfoTooltip text="Filter bookmarks by category or add custom color-coded categories." />
       </div>
       <ul>

@@ -54,7 +54,7 @@ The dashboard searches post text, quoted posts, authors, tags and your notes.
 - **Categories, tags and notes.** Color-coded categories, free-form tags and a private note on any post.
 - **Bulk actions.** Tick posts, or select everything in view, then move, export or delete them in one go.
 - **Posts that outlast X.** Saved text stays readable if the author deletes the post, goes private or gets suspended. Images load from X, so those can disappear.
-- **One library per X account, if you want it.** Everything goes into one library by default. From the library menu in the sidebar you can add libraries, pick where new saves go, or turn on "Follow the X account I'm logged into" so each account gets its own.
+- **One library per X account, if you want it.** Everything goes into one library by default. From the library menu in the sidebar you can add libraries, pick where new saves go, or choose "One library per X account" so each account gets its own.
 - **Optional auto-categorize.** A small embedding model (`all-MiniLM-L6-v2`, about 45 MB) sorts posts into your categories. It downloads once from Hugging Face when you switch it on and then runs in your browser. It's off by default.
 - **Export and import.** Save your whole library, or just the selected posts, to a JSON file with categories, tags and notes, and import it in another browser.
 - **Fits in with X.** The save button and menus follow X's Light, Dim and Dark themes. The dashboard has light, dark and system themes, four card densities and your choice of accent color.

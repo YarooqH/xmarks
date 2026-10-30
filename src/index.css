@@ -491,6 +491,12 @@ input[type="color"]::-webkit-color-swatch {
   -webkit-backdrop-filter: blur(12px) saturate(160%);
   backdrop-filter: blur(12px) saturate(160%);
   z-index: 10;
+  transition: top 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Slide the title row out above the viewport; the header keeps its height so the page doesn't shift. */
+.content-header.collapsed {
+  top: calc(-1 * var(--header-top-h, 0px));
 }
 
 .content-header-top {
@@ -498,19 +504,12 @@ input[type="color"]::-webkit-color-swatch {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
-  max-height: 60px;
   opacity: 1;
-  transition: max-height 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-              opacity 0.16s ease-out,
-              margin-bottom 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-  overflow: hidden;
-  will-change: max-height, opacity, margin-bottom;
+  transition: opacity 0.16s ease-out;
 }
 
 .content-header-top.collapsed {
-  max-height: 0;
   opacity: 0;
-  margin-bottom: 0;
   pointer-events: none;
 }
 
@@ -1668,16 +1667,7 @@ input[type="color"]::-webkit-color-swatch {
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
-    max-height: 60px;
     margin-bottom: 10px;
-    opacity: 1;
-  }
-
-  .content-header-top.collapsed {
-    max-height: 0;
-    margin-bottom: 0;
-    opacity: 0;
-    pointer-events: none;
   }
 
   .content-title {
@@ -1789,6 +1779,7 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .content-header,
   .settings-content,
   .settings-sidebar,
   .ai-card-body,

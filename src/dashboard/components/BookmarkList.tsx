@@ -57,7 +57,27 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
   const upDistance = React.useRef(0);
   const frameRequest = React.useRef<number | null>(null);
   const collapsedRef = React.useRef(false);
+  const headerRef = React.useRef<HTMLDivElement>(null);
+  const headerTopRef = React.useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
+
+  // Collapsing slides the sticky header up by the top row's height instead of
+  // shrinking it. Shrinking changed the page height, scroll anchoring moved
+  // scrollY to match, and the handler below read that as a scroll the other way,
+  // so the row kept collapsing and expanding.
+  React.useLayoutEffect(() => {
+    const header = headerRef.current;
+    const top = headerTopRef.current;
+    if (!header || !top) return;
+    const measure = () => {
+      const height = top.offsetHeight + parseFloat(getComputedStyle(top).marginBottom);
+      header.style.setProperty('--header-top-h', `${height}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(top);
+    return () => observer.disconnect();
+  }, []);
   const transition = getMotionTransition(Boolean(reducedMotion));
 
   React.useEffect(() => {
@@ -159,8 +179,8 @@ export const BookmarkList: React.FC<BookmarkListProps> = ({
           );
         })}
       </nav>
-      <div className="content-header">
-        <div className={`content-header-top ${headerCollapsed ? 'collapsed' : ''}`}>
+      <div ref={headerRef} className={`content-header ${headerCollapsed ? 'collapsed' : ''}`}>
+        <div ref={headerTopRef} className={`content-header-top ${headerCollapsed ? 'collapsed' : ''}`}>
           <h1 className="content-title">
             {selectedCategoryId === '__uncategorized__' ? 'Uncategorized' : (selectedCategoryId ? getCategoryName(selectedCategoryId) : 'All Bookmarks')}
           </h1>

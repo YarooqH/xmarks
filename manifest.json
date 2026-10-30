@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "XMarks: Bookmark Manager for X",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Search, sort and add notes to your X (Twitter) bookmarks. Free, no account, and everything stays in your browser.",
   "browser_specific_settings": {
     "gecko": {

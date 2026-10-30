@@ -37,7 +37,15 @@ async function save(db: TwitterBookmarkDatabase, input: BookmarkSaveInput) {
     if (input.categoryIds) patch.categoryIds = input.categoryIds;
     if (input.note !== undefined) patch.note = input.note;
     if (input.tags) patch.tags = input.tags;
-    if (Object.keys(patch).length > 0) await db.bookmarks.update(input.id, patch);
+    const refreshed: Partial<Bookmark> = { ...patch };
+    if (input.tweetUrl) refreshed.tweetUrl = input.tweetUrl;
+    // Article posts saved before previews existed have the cover or body images as media and no
+    // article. Saving one again replaces those with the fresh scrape.
+    if (input.articles?.some(art => art.kind === 'x-article')) {
+      refreshed.articles = input.articles;
+      refreshed.media = input.media || [];
+    }
+    if (Object.keys(refreshed).length > 0) await db.bookmarks.update(input.id, refreshed);
     return { bookmark: (await db.bookmarks.get(input.id))!, created: false };
   }
 

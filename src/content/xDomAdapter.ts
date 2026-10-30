@@ -6,6 +6,8 @@
  * consumers can decide how to degrade when X changes its DOM.
  */
 
+import { findPermalink, parseStatusHref } from '../shared/tweetUrl';
+
 // ---- Types ----
 
 export const ADAPTER_VERSION = 1;
@@ -187,14 +189,14 @@ export function getActionState(actionBar: Element, action: ActionType): ActionSt
 
 /**
  * Extract tweet ID from a tweet element.
- * Resolution: time-link with /status/ → any link containing /status/.
+ * Resolution: the <time> permalink → a bare /status/<id> link → any status link.
  */
 export function getTweetId(tweet: Element): AdapterResult<string> {
   // Phase 1: anchor with /status/ in href (high confidence)
-  const timeLink = tweet.querySelector('a[href*="/status/"]');
+  const timeLink = findPermalink(tweet);
   if (timeLink) {
-    const match = (timeLink.getAttribute('href') || '').match(/\/status\/(\d+)/);
-    if (match) return { found: true, element: match[1], confidence: 'high' };
+    const parsed = parseStatusHref(timeLink.getAttribute('href') || '');
+    if (parsed) return { found: true, element: parsed.id, confidence: 'high' };
   }
 
   return { found: false, confidence: 'low' };

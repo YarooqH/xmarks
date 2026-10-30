@@ -3,6 +3,11 @@ import { db, Bookmark } from '../../db';
 import { getInitials, getCategoryColor, getAccessibleTextColor, formatDate, formatRelativeTime } from '../helpers';
 import { LinkIcon, TrashIcon, MoreHorizontalIcon } from '../icons';
 import { Dropdown } from './Dropdown';
+import { canonicalTweetUrl } from '../../shared/tweetUrl';
+import type { ArticleItem } from '../../db';
+
+// Saves from before article previews existed only marked X Articles by their domain label.
+const isXArticle = (art: ArticleItem) => art.kind === 'x-article' || art.domain === 'X Article';
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
@@ -208,13 +213,17 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
 }) => {
   const [isEditingTags, setIsEditingTags] = React.useState(false);
   const [tempTagInput, setTempTagInput] = React.useState('');
+  const xArticle = bookmark.articles?.find(isXArticle);
+  const linkCards = bookmark.articles?.filter(art => art !== xArticle) ?? [];
+  // Posts that are only an article fall back to the article title as their text; the preview already shows it.
+  const showText = Boolean(bookmark.text) && bookmark.text!.trim() !== xArticle?.title?.trim();
   return (
     <div 
       className={`bookmark-card ${isSelected ? 'selected' : ''}`}
       data-bookmark-id={bookmark.id}
       onClick={(e) => {
         if ((e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) return;
-        window.open(bookmark.tweetUrl, '_blank');
+        window.open(canonicalTweetUrl(bookmark.tweetUrl), '_blank');
       }}
       onMouseDown={(e) => {
         if (e.button === 1 && !(e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) {
@@ -224,7 +233,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
       onAuxClick={(e) => {
         if (e.button === 1 && !(e.target as HTMLElement).closest('a, button, input, textarea, .bm-cat-dropdown-menu')) {
           e.preventDefault();
-          window.open(bookmark.tweetUrl, '_blank');
+          window.open(canonicalTweetUrl(bookmark.tweetUrl), '_blank');
         }
       }}
       style={{
@@ -274,7 +283,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                 id: 'view',
                 label: 'View on X',
                 icon: <LinkIcon />,
-                href: bookmark.tweetUrl,
+                href: canonicalTweetUrl(bookmark.tweetUrl),
                 target: '_blank',
               },
               {
@@ -288,9 +297,9 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
           />
       </div>
 
-      {bookmark.text ? (
-        <ExpandableTweetText text={bookmark.text} className="bm-text" />
-      ) : (
+      {showText ? (
+        <ExpandableTweetText text={bookmark.text!} className="bm-text" />
+      ) : !xArticle && (
         <p className="bm-text"><em style={{ color: 'var(--text-muted)' }}>(No text)</em></p>
       )}
 
@@ -366,8 +375,28 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
         </div>
       )}
 
-      {/* Articles / Card Links */}
-      {bookmark.articles && bookmark.articles.length > 0 && bookmark.articles.map((art, idx) => (
+      {/* X Article preview */}
+      {xArticle && (
+        <div
+          className="bm-article"
+          onClick={(e) => {
+            e.stopPropagation();
+            window.open(canonicalTweetUrl(xArticle.url), '_blank');
+          }}
+        >
+          {xArticle.thumbnailUrl && (
+            <img src={xArticle.thumbnailUrl} alt="" className="bm-article-cover" loading="lazy" />
+          )}
+          <div className="bm-article-body">
+            <div className="bm-article-label">Article</div>
+            {xArticle.title && <div className="bm-article-title">{xArticle.title}</div>}
+            {xArticle.snippet && <p className="bm-article-snippet">{xArticle.snippet}</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Link cards */}
+      {linkCards.map((art, idx) => (
         <div 
           key={idx}
           onClick={(e) => {
@@ -427,7 +456,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
           {bookmark.media.slice(0, 4).map((item, idx) => {
             const isVideo = item.type === 'video';
             const isDirectVideoUrl = isVideo && item.url && !item.url.startsWith('blob:') && (item.url.includes('.mp4') || item.url.includes('video.twimg.com'));
-            const targetUrl = isDirectVideoUrl ? item.url : bookmark.tweetUrl;
+            const targetUrl = isDirectVideoUrl ? item.url : canonicalTweetUrl(bookmark.tweetUrl);
 
             return (
               <div 
@@ -712,7 +741,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             ? `posted ${formatDate(bookmark.createdAt)} · saved ${formatRelativeTime(bookmark.savedAt)}` 
             : `saved ${formatRelativeTime(bookmark.savedAt)}`}
         </span>
-        <a href={bookmark.tweetUrl} target="_blank" rel="noreferrer" className="bm-link" onClick={e => e.stopPropagation()}>
+        <a href={canonicalTweetUrl(bookmark.tweetUrl)} target="_blank" rel="noreferrer" className="bm-link" onClick={e => e.stopPropagation()}>
           View tweet ↗
         </a>
       </div>

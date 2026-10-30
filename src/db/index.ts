@@ -1,6 +1,7 @@
 import Dexie from 'dexie';
 import type { Table } from 'dexie';
 import { DEFAULT_PROFILE_ID } from './profiles';
+import { canonicalTweetUrl } from '../shared/tweetUrl';
 
 export type MediaItem = {
   type: "image" | "video" | "gif";
@@ -20,6 +21,8 @@ export type QuotedTweet = {
 
 export type ArticleItem = {
   url: string;
+  // 'x-article' is a long-form X Article; anything else is a link card.
+  kind?: 'x-article';
   title?: string;
   domain?: string;
   snippet?: string;
@@ -79,6 +82,15 @@ export class TwitterBookmarkDatabase extends Dexie {
       bookmarks: 'id, savedAt, *categoryIds, *tags, source, syncStatus',
       categories: 'id, sortOrder, syncStatus'
     });
+    // Article posts used to save their views link (/status/<id>/analytics) as the tweet URL.
+    this.version(3).stores({
+      bookmarks: 'id, savedAt, *categoryIds, *tags, source, syncStatus',
+      categories: 'id, sortOrder, syncStatus'
+    }).upgrade(tx =>
+      tx.table('bookmarks').toCollection().modify((bookmark: Bookmark) => {
+        if (bookmark.tweetUrl) bookmark.tweetUrl = canonicalTweetUrl(bookmark.tweetUrl);
+      })
+    );
   }
 }
 

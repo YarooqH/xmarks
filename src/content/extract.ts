@@ -1,3 +1,77 @@
+import { ARTICLE_BODY_SELECTOR, canonicalTweetUrl, findPermalink, parseStatusHref } from '../shared/tweetUrl';
+import type { ArticleItem } from '../db';
+
+// X Articles render two ways: a preview card in timelines (cover + title + excerpt)
+// and the full reader on the post's own page. Neither is a link card.
+const ARTICLE_READER_SELECTOR = '[data-testid="twitterArticleReadView"]';
+const ARTICLE_COVER_SELECTOR = '[data-testid="article-cover-image"]';
+
+/** The element holding an X Article (reader or timeline card), so its text and images aren't read as the tweet's own. */
+function findArticleContainer(tweetElement: Element): HTMLElement | null {
+  const reader = tweetElement.querySelector(ARTICLE_READER_SELECTOR);
+  if (reader) return reader as HTMLElement;
+  return (tweetElement.querySelector(ARTICLE_COVER_SELECTOR)?.parentElement as HTMLElement | null) ?? null;
+}
+
+const textOf = (el: Element | null | undefined) =>
+  ((el as HTMLElement | null)?.innerText || el?.textContent || '').trim();
+
+function firstMediaImage(root: Element, exclude?: Element | null): string | undefined {
+  const imgs = Array.from(root.querySelectorAll<HTMLImageElement>('img[src*="pbs.twimg.com/media"]'));
+  const img = imgs.find(i => !exclude?.contains(i));
+  if (img) return img.src || img.getAttribute('src') || undefined;
+
+  // The timeline cover sets a background-image before its <img> lazily mounts.
+  for (const el of Array.from(root.querySelectorAll<HTMLElement>('div[style*="background-image"]'))) {
+    if (exclude?.contains(el)) continue;
+    const match = el.style.backgroundImage.match(/url\(["']?(https:\/\/pbs\.twimg\.com\/media\/[^"')]+)/);
+    if (match) return match[1];
+  }
+  return undefined;
+}
+
+const toSnippet = (text: string) => {
+  const flat = text.replace(/\s+/g, ' ').trim();
+  return flat.length > 280 ? flat.slice(0, 277).trimEnd() + '…' : flat;
+};
+
+export function extractXArticle(tweetElement: Element, tweetUrl: string): ArticleItem | null {
+  let title = '';
+  let snippet = '';
+  let thumbnailUrl: string | undefined;
+
+  const reader = tweetElement.querySelector(ARTICLE_READER_SELECTOR);
+  const cover = tweetElement.querySelector(ARTICLE_COVER_SELECTOR);
+  if (reader) {
+    const body = reader.querySelector(ARTICLE_BODY_SELECTOR);
+    title = textOf(reader.querySelector('[data-testid="twitter-article-title"]'));
+    snippet = toSnippet(textOf(body));
+    // Articles without a cover still get a picture: the first image in the body.
+    thumbnailUrl = firstMediaImage(reader, body) || (body ? firstMediaImage(body) : undefined);
+  } else if (cover?.parentElement) {
+    // Card layout: [cover, text block], where the text block holds the title then the excerpt.
+    const textBlock = Array.from(cover.parentElement.children).find(el => el !== cover);
+    const lines = Array.from(textBlock?.children ?? []).map(textOf).filter(Boolean);
+    title = lines[0] || '';
+    snippet = toSnippet(lines.slice(1).join(' '));
+    thumbnailUrl = firstMediaImage(cover);
+  } else {
+    return null;
+  }
+
+  if (thumbnailUrl) thumbnailUrl = thumbnailUrl.replace(/([?&]name=)\w+/, '$1medium');
+
+  return {
+    url: tweetUrl,
+    kind: 'x-article',
+    title: title || 'X Article',
+    domain: 'X Article',
+    snippet: snippet || undefined,
+    thumbnailUrl,
+  };
+}
+
+
 export function extractCleanTweetText(tweetElement: Element): string {
   const allTextEls = Array.from(tweetElement.querySelectorAll('[data-testid="tweetText"]'));
   if (allTextEls.length === 0) return '';
@@ -5,14 +79,17 @@ export function extractCleanTweetText(tweetElement: Element): string {
   // If this tweetElement contains a quoted tweet or card, filter out their tweetText elements
   const mainQuoteEl = findQuoteTweetContainer(tweetElement);
   const mainCardEl = tweetElement.querySelector('[data-testid="card.wrapper"], [data-testid="article-card"]');
+  const articleEl = findArticleContainer(tweetElement);
 
   const filteredTextEls = allTextEls.filter(el => {
     if (mainQuoteEl && mainQuoteEl.contains(el)) return false;
     if (mainCardEl && mainCardEl.contains(el)) return false;
+    if (articleEl && articleEl.contains(el)) return false;
     return true;
   });
 
-  const targetEls = filteredTextEls.length > 0 ? filteredTextEls : allTextEls;
+  // Tweets embedded in an article body are never the tweet's own text.
+  const targetEls = filteredTextEls.length > 0 || articleEl ? filteredTextEls : allTextEls;
 
   return targetEls.map(textEl => {
     const clone = textEl.cloneNode(true) as HTMLElement;
@@ -87,7 +164,9 @@ function findQuoteTweetContainer(tweetElement: Element): HTMLElement | null {
   const testIdQuote = tweetElement.querySelector('[data-testid="quoteTweet"]');
   if (testIdQuote) return testIdQuote as HTMLElement;
 
-  const userNames = tweetElement.querySelectorAll('[data-testid="User-Name"]');
+  const articleBody = tweetElement.querySelector(ARTICLE_BODY_SELECTOR);
+  const userNames = Array.from(tweetElement.querySelectorAll('[data-testid="User-Name"]'))
+    .filter(el => !articleBody?.contains(el));
   if (userNames.length > 1) {
     const secondUser = userNames[1];
     const candidate = secondUser.closest('div[role="link"], div[tabindex="0"]') as HTMLElement | null;
@@ -112,16 +191,13 @@ export function extractTweetData(tweetElement: Element) {
     }
 
     // Attempt to extract tweet ID and createdAt from the time link
-    const timeLink = tweetElement.querySelector('a[href*="/status/"]');
+    const timeLink = findPermalink(tweetElement);
     let id = '';
     let url = '';
-    if (timeLink) {
-      const href = timeLink.getAttribute('href') || '';
-      url = 'https://x.com' + href;
-      const match = href.match(/\/status\/(\d+)/);
-      if (match) {
-        id = match[1];
-      }
+    const permalink = timeLink ? parseStatusHref(timeLink.getAttribute('href') || '') : null;
+    if (permalink) {
+      id = permalink.id;
+      url = canonicalTweetUrl(timeLink!.getAttribute('href') || '');
     }
 
     // Skip saving when ID can't be resolved rather than synthesizing fake timestamps
@@ -163,11 +239,13 @@ export function extractTweetData(tweetElement: Element) {
     // Find quoteContainer & card elements to exclude their media from main tweet media
     const mainQuoteEl = findQuoteTweetContainer(tweetElement);
     const mainCardEl = tweetElement.querySelector('[data-testid="card.wrapper"], [data-testid="article-card"]');
+    // Article covers and body images belong to the article preview, not the tweet's media.
+    const articleEl = findArticleContainer(tweetElement);
 
     // Scrape tweet videos/GIFs FIRST
     const videoEls = tweetElement.querySelectorAll('video');
     videoEls.forEach(el => {
-      if (mainQuoteEl?.contains(el) || mainCardEl?.contains(el)) return;
+      if (mainQuoteEl?.contains(el) || mainCardEl?.contains(el) || articleEl?.contains(el)) return;
 
       const v = el as HTMLVideoElement;
       const poster = v.getAttribute('poster') || v.poster || '';
@@ -190,7 +268,7 @@ export function extractTweetData(tweetElement: Element) {
       '[data-testid="tweetPhoto"] img, a[href*="/photo/"] img, a[href*="/media/"] img, img[src*="pbs.twimg.com/media"]'
     );
     photoEls.forEach(el => {
-      if (mainQuoteEl?.contains(el) || mainCardEl?.contains(el)) return;
+      if (mainQuoteEl?.contains(el) || mainCardEl?.contains(el) || articleEl?.contains(el)) return;
       if (el.closest('[data-testid="videoPlayer"], [data-testid="videoComponent"]')) return;
 
       const img = el as HTMLImageElement;
@@ -306,10 +384,13 @@ export function extractTweetData(tweetElement: Element) {
     }
 
     // Extract Articles / Card Links
-    const articles: { url: string; title?: string; domain?: string; snippet?: string; thumbnailUrl?: string }[] = [];
+    const articles: ArticleItem[] = [];
+    const xArticle = extractXArticle(tweetElement, url);
+    if (xArticle) articles.push(xArticle);
     const cardEls = tweetElement.querySelectorAll('[data-testid="card.wrapper"], [data-testid="article-card"], [data-testid="card.layoutLarge.detail"], [data-testid="card.layoutSmall.detail"]');
     
     cardEls.forEach(card => {
+      if (articleEl?.contains(card)) return;
       const cardLink = (card.tagName === 'A' ? card : card.querySelector('a[href]')) as HTMLAnchorElement | null;
       const href = cardLink?.getAttribute('href') || cardLink?.href || '';
       

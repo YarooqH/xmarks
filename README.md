@@ -24,37 +24,37 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/demo.gif" width="860" alt="XMarks demo: syncing bookmarks from X, saving a post with a category and a note, then finding it by searching the note in the dashboard">
+  <img src="docs/images/demo.gif" width="860" alt="XMarks demo: saving a post from the X timeline into a new category with a note, opening the toolbar popup, then tagging it and finding it by its note in the dashboard">
 </p>
 
 X bookmarks are one long list. Folders need a paid subscription, search only matches post text, and there are no tags, notes or backups. XMarks adds a save button to X and keeps a copy of everything you bookmark in a library you can search, sort and annotate.
 
 ## How it works
 
-### 1. Sync the bookmarks you already have
-
-Open your Bookmarks on X and click **Sync Bookmarks** under the Post button. XMarks scrolls through the list and keeps a copy of every post, skipping ones it already has. You can pause and pick up later.
-
-![The Sync Bookmarks panel on X's Bookmarks page](docs/images/sync.jpg)
-
-### 2. Save new posts as you scroll
+### 1. Save posts as you scroll
 
 A book button sits in every post's action bar. Click it, pick a category and add a note. If you'd rather keep using X's own bookmark button, switch to **Override Native** and XMarks saves a copy whenever you use it.
 
 ![The XMarks save popover on a post, with categories and a note field](docs/images/save.jpg)
 
-### 3. Find it later
+### 2. Find it later
 
-The dashboard searches post text, quoted posts, authors, tags and your notes.
+Click the XMarks icon in Chrome's toolbar for your latest saves, or open the dashboard to search post text, quoted posts, authors, tags and your notes.
 
 ![The XMarks dashboard filtered by a search for "bread"](docs/images/search.jpg)
+
+### 3. Bring in the bookmarks you already have
+
+Open your Bookmarks on X and click **Sync Bookmarks** under the Post button. XMarks scrolls through the list and keeps a copy of every post, skipping ones it already has. You can pause and pick up later.
+
+![The Sync Bookmarks panel on X's Bookmarks page](docs/images/sync.jpg)
 
 ## Features
 
 - **Categories, tags and notes.** Color-coded categories, free-form tags and a private note on any post.
 - **Bulk actions.** Tick posts, or select everything in view, then move, export or delete them in one go.
 - **Posts that outlast X.** Saved text stays readable if the author deletes the post, goes private or gets suspended. Images load from X, so those can disappear.
-- **One library per X account, if you want it.** Everything goes into one library by default. From the library menu in the sidebar you can add libraries, pick where new saves go, or turn on "Follow the X account I'm logged into" so each account gets its own.
+- **One library per X account, if you want it.** Everything goes into one library by default. From the library menu in the sidebar you can add libraries, pick where new saves go, or choose "One library per X account" so each account gets its own.
 - **Optional auto-categorize.** A small embedding model (`all-MiniLM-L6-v2`, about 45 MB) sorts posts into your categories. It downloads once from Hugging Face when you switch it on and then runs in your browser. It's off by default.
 - **Export and import.** Save your whole library, or just the selected posts, to a JSON file with categories, tags and notes, and import it in another browser.
 - **Fits in with X.** The save button and menus follow X's Light, Dim and Dark themes. The dashboard has light, dark and system themes, four card densities and your choice of accent color.

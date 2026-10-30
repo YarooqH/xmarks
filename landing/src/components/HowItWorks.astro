@@ -7,19 +7,6 @@ const bookPath =
   <h2 class="section-title">How it works</h2>
   <ol class="steps">
     <li class="step">
-      <div class="art" aria-hidden="true">
-        <div class="post-btn">Post</div>
-        <div class="sync-row">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"></path><path d="M20 4v4h-4"></path></svg>
-          Sync Bookmarks
-        </div>
-        <div class="track"><div class="track-fill"></div></div>
-      </div>
-      <h3>1. Sync what you already saved</h3>
-      <p>Open your Bookmarks on X and click Sync Bookmarks. XMarks scrolls the list, keeps a local copy and skips duplicates. Pause and resume any time.</p>
-    </li>
-
-    <li class="step">
       <div class="art art-end" aria-hidden="true">
         <div class="mini-bar">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg>
@@ -34,8 +21,21 @@ const bookPath =
           <div class="pop-note">Add a note...</div>
         </div>
       </div>
-      <h3>2. Save new posts as you scroll</h3>
-      <p>A book icon sits in every post’s action bar. Click it, pick a category, add a note. Or let X’s own bookmark button save to XMarks.</p>
+      <h3>1. Save posts as you scroll</h3>
+      <p>A book icon sits in every post’s action bar. Click it, pick a category or make a new one, and add a note. Or let X’s own bookmark button save to XMarks.</p>
+    </li>
+
+    <li class="step">
+      <div class="art" aria-hidden="true">
+        <div class="pp">
+          <div class="pp-head"><b>XMarks</b><span>Recent saves</span></div>
+          <div class="pp-row"><span class="pp-av" style="background:#ffd400"></span><span class="pp-text">hehe</span><span class="pp-badge" style="--c:#ffd400">Memes</span></div>
+          <div class="pp-row"><span class="pp-av" style="background:#1d9bf0"></span><span class="pp-text">one does not simply merge to main…</span><span class="pp-badge" style="--c:#1d9bf0">Dev</span></div>
+          <div class="pp-open">Open Full Dashboard</div>
+        </div>
+      </div>
+      <h3>2. Check it from the toolbar</h3>
+      <p>Click the XMarks icon in Chrome’s toolbar to see your latest saves, then open the full dashboard in one click.</p>
     </li>
 
     <li class="step">
@@ -47,8 +47,8 @@ const bookPath =
         <div class="result">Writing a tiny database in <mark>Rust</mark>: pages, B-trees and a WAL.</div>
         <div class="result"><mark>Rust</mark> in production, one year later.</div>
       </div>
-      <h3>3. Search everything</h3>
-      <p>Search inside post text, quoted posts, authors, tags and your notes. Sort into categories by hand, or let the local model do it.</p>
+      <h3>3. Find it again</h3>
+      <p>Search post text, quoted posts, authors, tags and your notes. Sort by hand or let the local model do it. Already have bookmarks on X? Sync them in once.</p>
     </li>
   </ol>
 </section>
@@ -109,46 +109,72 @@ const bookPath =
     align-items: flex-end;
   }
 
-  .post-btn {
-    height: 44px;
-    border-radius: 9999px;
-    background: var(--text);
-    color: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-  }
-
-  .sync-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 14px;
-    border-radius: 9999px;
-    background: var(--accent-soft);
-    font-weight: 700;
-  }
-
-  .track {
-    height: 6px;
-    margin-top: 8px;
-    border-radius: 9999px;
-    background: var(--border);
+  .pp {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg);
+    font-size: 13px;
     overflow: hidden;
   }
 
-  .track-fill {
-    width: 45%;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--accent);
-    animation: indeterminate 1.25s ease-in-out infinite;
+  .pp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
   }
 
-  @keyframes indeterminate {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(220%); }
+  .pp-head span {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .pp-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+  }
+
+  .pp-av {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    opacity: 0.85;
+  }
+
+  .pp-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pp-badge {
+    flex: none;
+    padding: 0 7px;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
+    background: color-mix(in srgb, var(--c) 14%, transparent);
+    color: var(--c);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .pp-open {
+    margin: 4px 12px 10px;
+    padding: 5px;
+    border-radius: 9999px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    text-align: center;
+    font-weight: 700;
+    font-size: 12px;
   }
 
   .mini-bar {

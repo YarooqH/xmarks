@@ -16,7 +16,8 @@ import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { MultiSelectActionBar } from './components/MultiSelectActionBar';
 import { useOnboarding } from '../onboarding/state';
 import { useTour } from '../onboarding/useTour';
-import { buildBackup, parseBackup } from './backup';
+import { backupFileName, buildBackup, parseBackup } from './backup';
+import { loadProfilesState } from '../db/profiles';
 
 export type SortOption = 'newest' | 'oldest' | 'posted-newest' | 'posted-oldest' | 'author';
 
@@ -261,9 +262,15 @@ export const Dashboard: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Names the library in the file only when there's more than one to tell apart.
+  const exportLibraryName = async () => {
+    const { profiles, viewingProfileId } = await loadProfilesState();
+    return profiles.length > 1 ? profiles.find(p => p.id === viewingProfileId)?.label : undefined;
+  };
+
   const handleExport = async () => {
     const [allBookmarks, allCategories] = await Promise.all([bookmarkRepository.all(), bookmarkRepository.listCategories()]);
-    downloadJson(buildBackup(allBookmarks, allCategories), 'xmarks-backup.json');
+    downloadJson(buildBackup(allBookmarks, allCategories), backupFileName({ library: await exportLibraryName() }));
     setToastMessage(`Exported ${allBookmarks.length} bookmarks and ${allCategories.length} categories`);
   };
 
@@ -274,7 +281,7 @@ export const Dashboard: React.FC = () => {
       const selected = await bookmarkRepository.getMany(ids);
       const exportData = selected.filter((bookmark): bookmark is NonNullable<typeof bookmark> => Boolean(bookmark));
       const allCategories = await bookmarkRepository.listCategories();
-      downloadJson(buildBackup(exportData, allCategories, true), `xmarks-backup-${exportData.length}-selected.json`);
+      downloadJson(buildBackup(exportData, allCategories, true), backupFileName({ library: await exportLibraryName(), suffix: `${exportData.length}-selected` }));
       setToastMessage(`Exported ${exportData.length} selected bookmark${exportData.length === 1 ? '' : 's'}`);
     } catch {
       setToastMessage('Could not export the selected bookmarks');

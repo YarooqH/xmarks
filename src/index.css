@@ -1646,6 +1646,16 @@ input[type="color"]::-webkit-color-swatch {
   transition: width 0.2s ease-out;
 }
 
+/* Backups card */
+.backup-card { gap: 10px; }
+.backup-body { display: flex; flex-direction: column; gap: 8px; }
+.backup-toggle-row { padding: 0 2px; color: var(--text); }
+.backup-status { margin: 0; font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+.backup-status.is-error { color: var(--danger); }
+.backup-now { width: 100%; justify-content: center; padding: 7px 8px; font-size: 12px; }
+.backup-now:disabled { opacity: 0.6; cursor: default; }
+.backup-hint { margin: 0; font-size: 11.5px; line-height: 1.45; color: var(--text-muted); }
+
 .ai-run-button {
   width: 100%;
   justify-content: center;

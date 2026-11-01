@@ -2,6 +2,8 @@ import { getProfileDb, type Bookmark } from './db';
 import { loadProfilesState, routeToAccount, saveProfilesState } from './db/profiles';
 import { createBookmarkRepository } from './bookmarks/repository';
 import { MSG, type ActionMessage } from './messages';
+import { BACKUP_ALARM, runBackup } from './backup/runner';
+import { isBackupDue, loadBackupLog, loadBackupSettings } from './backup/settings';
 
 // Saves from X go to the saving profile. In auto mode that is the library of the X account the page
 // reported, created on first sight. Resolved per call because the user can switch it at any time.
@@ -61,6 +63,14 @@ chrome.runtime.onMessage.addListener((message: ActionMessage, sender, sendRespon
     return true;
   }
 
+  // "Back up now" in the dashboard writes every library, changed or not.
+  if (message.type === MSG.RUN_BACKUP) {
+    runBackup({ force: true })
+      .then(result => sendResponse({ success: true, ...result }))
+      .catch(err => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
   if (message.type === MSG.OPEN_DASHBOARD) {
     chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
     sendResponse({ success: true });
@@ -109,3 +119,15 @@ async function handleImportBatch(payload: Partial<Bookmark>[], accountHandle?: s
     return { success: false, error: error.message };
   }
 }
+
+// Automatic backups: an hourly check writes one when the chosen interval has passed.
+// Chrome can drop alarms when the extension updates, so the worker recreates it whenever it starts.
+chrome.alarms.get(BACKUP_ALARM).then(alarm => {
+  if (!alarm) chrome.alarms.create(BACKUP_ALARM, { delayInMinutes: 1, periodInMinutes: 60 });
+});
+
+chrome.alarms.onAlarm.addListener(async alarm => {
+  if (alarm.name !== BACKUP_ALARM) return;
+  const [settings, log] = await Promise.all([loadBackupSettings(), loadBackupLog()]);
+  if (isBackupDue(settings, log)) runBackup().catch(err => console.error('Automatic backup failed:', err));
+});

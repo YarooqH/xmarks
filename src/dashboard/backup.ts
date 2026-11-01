@@ -16,6 +16,19 @@ export type Backup = {
   bookmarks: Bookmark[];
 };
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
+/** Local date and time for file names, e.g. 2026-10-30_14-25. Windows doesn't allow ":" in names. */
+export const fileTimestamp = (date: Date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}`;
+
+const slug = (label: string) => label.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '');
+
+/** e.g. xmarks-backup-work-2026-10-30_14-25.json. The library part is left out when there's no library name. */
+export function backupFileName({ date = new Date(), library, suffix }: { date?: Date; library?: string; suffix?: string } = {}) {
+  return `${['xmarks-backup', library && slug(library), fileTimestamp(date), suffix].filter(Boolean).join('-')}.json`;
+}
+
 /** Build a backup. Only categories used by the given bookmarks are included when `onlyUsedCategories` is set. */
 export function buildBackup(bookmarks: Bookmark[], categories: Category[], onlyUsedCategories = false): Backup {
   const used = new Set(bookmarks.flatMap(b => b.categoryIds ?? []));

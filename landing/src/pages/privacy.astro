@@ -4,7 +4,7 @@ import { base, issuesUrl, repoUrl } from '../site';
 
 const title = 'Privacy policy · XMarks';
 const description = 'What the XMarks extension stores, where it keeps it, and the few times it touches the network.';
-const updated = '20 October 2026';
+const updated = '30 October 2026';
 ---
 
 <Base title={title} description={description} path="privacy/">
@@ -42,6 +42,11 @@ const updated = '20 October 2026';
         account it belongs to.
       </p>
       <p>XMarks also remembers which onboarding tips you have seen, on this device only.</p>
+      <p>
+        If you turn on automatic backups, XMarks saves a JSON copy of each library to the XMarks backups folder in your
+        Downloads folder, once a day or once a week, and deletes its own older copies so the newest seven of each library
+        remain. These files stay on your computer and are not removed when you uninstall XMarks.
+      </p>
     </section>
 
     <section>
@@ -79,6 +84,10 @@ const updated = '20 October 2026';
       <dl>
         <dt>storage, unlimitedStorage</dt>
         <dd>To keep your library and settings in your browser, however large the library gets.</dd>
+        <dt>alarms</dt>
+        <dd>To check once an hour whether an automatic backup is due.</dd>
+        <dt>downloads (optional)</dt>
+        <dd>Asked for only when you turn on backups or click Back up now, to save backup files and delete older ones.</dd>
         <dt>Access to x.com and twitter.com</dt>
         <dd>To add the save button and Sync Bookmarks to X, and to read the posts you choose to save.</dd>
       </dl>
@@ -89,7 +98,7 @@ const updated = '20 October 2026';
       <ul>
         <li>Export your whole library, or selected posts, to a JSON file at any time from the dashboard.</li>
         <li>Delete any post, category or note in the dashboard.</li>
-        <li>Removing the extension deletes everything it stored in your browser. Export first if you want to keep a copy.</li>
+        <li>Removing the extension deletes everything it stored in your browser. Export first, or turn on automatic backups, if you want to keep a copy.</li>
       </ul>
       <p>We don’t sell, share or transfer your data, because we never have it.</p>
     </section>

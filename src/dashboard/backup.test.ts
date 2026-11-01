@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Bookmark, Category } from '../db';
-import { buildBackup, parseBackup } from './backup';
+import { backupFileName, buildBackup, parseBackup } from './backup';
 
 const cat = (id: string, name: string): Category => ({ id, name, color: '#1d9bf0', createdAt: new Date('2026-01-01'), sortOrder: 1 });
 const bm = (id: string, categoryIds: string[] = []): Bookmark => ({
@@ -18,6 +18,19 @@ const bm = (id: string, categoryIds: string[] = []): Bookmark => ({
 
 // What a backup looks like after a trip through a .json file.
 const roundTrip = (value: unknown) => JSON.parse(JSON.stringify(value));
+
+describe('backupFileName', () => {
+  const date = new Date(2026, 9, 3, 9, 5);
+
+  it('stamps the local date and time', () => {
+    expect(backupFileName({ date })).toBe('xmarks-backup-2026-10-03_09-05.json');
+  });
+
+  it('adds the library name and a suffix when given', () => {
+    expect(backupFileName({ date, library: '@Some_Handle', suffix: '3-selected' })).toBe('xmarks-backup-some-handle-2026-10-03_09-05-3-selected.json');
+    expect(backupFileName({ date, library: 'Work & Play' })).toBe('xmarks-backup-work-play-2026-10-03_09-05.json');
+  });
+});
 
 describe('buildBackup', () => {
   it('includes every category for a full export', () => {

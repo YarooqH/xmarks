@@ -6,6 +6,7 @@ import { categoryColors, formatBytes, calculateBookmarksStorageSize } from '../h
 import { applyAccentVariables } from '../../shared/colors';
 import { SaveConfigCard } from './SaveConfigCard';
 import { AICard } from './AICard';
+import { BackupCard } from './BackupCard';
 import { InfoTooltip } from './InfoTooltip';
 import { useThemeMode, type ThemeMode } from '../hooks/useThemeMode';
 import { type CardDensity } from '../hooks/useCardDensity';
@@ -472,6 +473,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     </span>
                   </div>
                 </div>
+
+                <BackupCard />
               </motion.div>
 
               <div className="mobile-only-ai-card">

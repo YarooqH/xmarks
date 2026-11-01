@@ -16,6 +16,7 @@ export const MSG = {
   GET_CATEGORIES:   'GET_CATEGORIES',
   CREATE_CATEGORY:  'CREATE_CATEGORY',
   OPEN_DASHBOARD:   'OPEN_DASHBOARD',
+  RUN_BACKUP:       'RUN_BACKUP',
 } as const;
 
 export type MessageType = (typeof MSG)[keyof typeof MSG];
@@ -36,6 +37,7 @@ export type ActionMessage = (
   | { type: typeof MSG.GET_CATEGORIES }
   | { type: typeof MSG.CREATE_CATEGORY;   payload: CreateCategoryPayload }
   | { type: typeof MSG.OPEN_DASHBOARD }
+  | { type: typeof MSG.RUN_BACKUP }
 ) & {
   // X handle the content script detected; the background uses it to pick a library in auto mode.
   accountHandle?: string;
